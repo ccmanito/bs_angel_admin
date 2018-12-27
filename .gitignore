@@ -1,5 +1,4 @@
 local_settings.py
-/.settings
 /env
 /venv
 /var
@@ -14,4 +13,5 @@ local_settings.py
 .idea/
 .vscode
 .venv/
+__pycache__
 
