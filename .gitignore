@@ -1,0 +1,17 @@
+local_settings.py
+/.settings
+/env
+/venv
+/var
+.project
+.pydevproject
+*.pyc
+*.log
+*.out
+*.swp
+/alarm_data/*.txt
+.DS_Store
+.idea/
+.vscode
+.venv/
+
