@@ -8,7 +8,7 @@
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
-    url(r'^', include('login.urls')),
+    url(r'api/', include('login.urls')),
     # ''' url(r'api/'), include(''),
  )
 

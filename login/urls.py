@@ -3,5 +3,5 @@ from django.conf.urls import patterns, url
 from .views import *
 
 urlpatterns = patterns('',
-    url(r'login',Test.as_view()),
+    url(r'login',LoginInfo.as_view()),
 )
