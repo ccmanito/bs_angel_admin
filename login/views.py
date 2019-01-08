@@ -8,12 +8,15 @@ class LoginInfo(JsonApiMixin, View):
     '''
     用户登录接口
     '''
-    def post(self, *args, **kwargs):
-        param = self.request.POST
-        if not param:
-            return self.render_to_response(code=400, msg='post parameter is null', data={})
+    def post(self, request, *args, **kwargs):
+        param = json.loads(request.body, strict=False)
+        # password = request.POST.get('password', '')
+        # if not param:
+        #     return self.render_to_response(code=400, msg='post parameter is null', data={})
         # 获取用户账号和密码
-        username = param.get('username', '')
-        password = param.get('pssword', '')
-        result_dict = {'username': username, 'password': password}
+        username = param['username']
+        print(username)
+        password = param['password']
+
+        result_dict = {'token': username}
         return self.render_to_response(code=200, msg='success', data=result_dict)
