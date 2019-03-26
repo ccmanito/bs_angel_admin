@@ -27,10 +27,12 @@ def get_access_token(request_code):
     }
     # request 请求 access_token and user data
     try:
+        print('888888888888')
         req = Request(url=url_access_token, data=json.dumps(params).encode('utf-8'),  method="POST", headers=header_selfdefine )
         resultset = urlopen(req).read().decode('utf-8')
         resultset = json.loads(resultset)
         access_token = resultset['access_token'] # 拿到access_token 就可以拿到第三方的数据。
+        print(access_token)
     except Exception as eer:
         return {"eer": eer}
     return access_token

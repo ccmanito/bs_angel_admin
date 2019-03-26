@@ -91,8 +91,6 @@ class Regedit(APIView):
     '''
     def post(self, request, *args, **kwargs):
         params = get_parameter_dic(request)
-        print(params)
-        # param = json.loads(request.body, strict=False)
         identifier = params['identifier'] # 身份唯一标识
         credential = params['credential'] # 授权凭证
         nickname = params['nickname'] # 昵称

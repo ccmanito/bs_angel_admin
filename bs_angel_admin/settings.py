@@ -118,7 +118,7 @@ OAUTH_GITHUB_CONFIG = {
  
     'client_id' : '35ba11253702082d5081', 
     'client_secret' : 'da3e790dab6a3594548a72928af26dfe9215197c',
-    'redirect_uri' : 'http://127.0.0.1:7080/api/user/github_check',#回调地址
+    'redirect_uri' : 'http://127.0.0.1:7080/user/github_check',#回调地址
     'scope' : 'user:email', #授权的权限
     'state' : 'Github',
  
