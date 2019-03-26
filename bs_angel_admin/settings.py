@@ -78,9 +78,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bs_angel',
-         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': '127.0.0.1',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '3306',              
     }
 }
@@ -104,3 +104,23 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOCAL_URL = 'http://127.0.0.1:7080'
+AVATAR = "http://f.hiphotos.baidu.com/image/pic/item/8601a18b87d6277ffbd3a0d722381f30e824fc18.jpg"
+OAUTH_GITHUB_CONFIG = {
+    'oauth_type_id' : 3,   #对应模型中记录的ID
+    'oauth_type' : 'Github',
+ 
+    'client_id' : '35ba11253702082d5081', 
+    'client_secret' : 'da3e790dab6a3594548a72928af26dfe9215197c',
+    'redirect_uri' : 'http://127.0.0.1:7080/api/user/github_check',#回调地址
+    'scope' : 'user:email', #授权的权限
+    'state' : 'Github',
+ 
+    #其他请求的链接
+    'url_authorize' : 'https://github.com/login/oauth/authorize',
+    'url_access_token' : 'https://github.com/login/oauth/access_token',
+    'url_open_id' : '',
+    'url_user_info' : 'https://api.github.com/user',
+    'url_email' : 'https://api.github.com/user/emails',
+}
