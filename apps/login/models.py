@@ -44,5 +44,3 @@ class UserInfo(models.Model):
         
     class Meta:
         db_table='user_info'
-
-

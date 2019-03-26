@@ -1,6 +1,6 @@
 local_settings.py
-/env
-/venv
+/.env
+/.venv
 /var
 .project
 .pydevproject
@@ -13,5 +13,6 @@ local_settings.py
 .idea/
 .vscode
 .venv/
+.env/
+.env
 __pycache__
-

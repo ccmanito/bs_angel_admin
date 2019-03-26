@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+cd "$(dirname $0)"/ || exit 1
+
+PROC_NAME=python3  #进程名
+PROC_PORT=8000 #进程端口
+WAIT_TIME=5 # 等待启动/停止时间
+RELEASE_PORT_TIME=5 # 释放端口时间
+PROC_NAME_CUT=${PROC_NAME::15}  #防止进程名过程，截取15字节
+
+help(){
+    echo "${0} <start|stop|restart|status>"
+    exit 1
+}
+
+checkhealth(){
+    if [[ -n "$PROC_PORT" ]] ; then
+        PORT_PROC=$(/usr/sbin/ss -nltp "( sport = :$PROC_PORT )" |sed 1d |awk '{print $NF}' |awk -F'"' '{print $2}'|uniq)
+        if [ X"$PORT_PROC" = X"$PROC_NAME_CUT" ] ; then
+                echo "running"
+            return 0
+        fi
+        echo "not running"
+        return 1
+   else
+       ps -eo comm,pid |grep -E  "^$PROC_NAME_CUT\b"
+       if [ "$?" = 0 ] ; then
+       echo "running"
+           return 0
+       fi
+       echo "not running"
+       return 1
+   fi
+}
+
+start(){
+    checkhealth
+    if [ $? = 0 ]; then
+        echo "[WARN] $PROC_NAME is aleady running!"
+        return 0
+    fi
+    cd /export/Packages/hodor/latest/hodor
+    python3 manage.py runserver 0.0.0.0:8000  &
+
+    for i in $(seq $WAIT_TIME) ; do
+        sleep 1
+        checkhealth
+        if [ $? = 0 ]; then
+            echo "Start $PROC_NAME success"
+            return 0
+        fi
+    done
+    echo "[ERROR] Start $PROC_NAME failed"
+    return 1
+}
+
+stop(){
+    if [[ -n "$PROC_PORT"  ]] ; then
+        PROC_ID=$(  /usr/sbin/ss -nltp "( sport = :$PROC_PORT )" |sed 1d  | awk '{print $NF}' |  grep -oP '\,.*\,' | grep -oP "\d+" |  uniq )
+    else
+        PROC_ID=$(ps -eo comm,pid  | grep "^$PROC_NAME_CUT\b" |awk '{print $2}')
+    fi
+
+    if [[ -z "$PROC_ID" ]] ; then
+        echo "[WARN] $PROC_NAME is aleady exit, skip stop"
+        return 0
+    fi
+
+    checkhealth
+    if [ "$?" != "0" ] ; then
+        echo "[WARN] $PROC_NAME is aleady exit, skip stop"
+        return 0
+    fi
+
+    kill $PROC_ID
+    for i in $(seq $WAIT_TIME) ; do
+        sleep 1
+        checkhealth
+        if [ "$?" != "0" ] ; then
+            echo "Stop $PROC_NAME success"
+            echo "Wait ${RELEASE_PORT_TIME} sec to release port"
+			sleep ${RELEASE_PORT_TIME}
+			return 0
+        fi
+    done
+
+    kill -9 $PROC_ID
+    sleep 1
+    checkhealth
+    if [ "$?" != "0" ] ; then
+        echo "Stop $PROC_NAME success"
+        echo "Wait ${RELEASE_PORT_TIME} sec to release port"
+		sleep ${RELEASE_PORT_TIME}
+		return 0
+    fi
+
+    echo "[ERROR] Stop $PROC_NAME failed"
+    return 1
+}
+
+case "${1}" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status|health|checkhealth)
+        checkhealth
+        ;;
+    restart)
+        stop && start
+        ;;
+    *)
+        help
+        ;;
+esac

@@ -1,5 +1,0 @@
-Django==1.8.3
-requests==2.9.1
-PyMySQL==0.8.0
-pylint-django
-django-file-md5==1.0.2

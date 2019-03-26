@@ -1,25 +1,25 @@
-# from django.shortcuts import render
-import json
-import hashlib
-import time
-from django.http import HttpResponseRedirect, Http404
-from utils.serializer import JsonApiMixin
-from django.views.generic.base import View
-from .models import *
+#! /usr/bin/env python
+#-*- coding:utf-8 -*-
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.request import Request
 from .controller import *
+from .models import *
+from .common import get_parameter_dic
+import time,json,requests,hashlib
 from django.shortcuts import render
-import requests
-from urllib.request import Request, urlopen
-import urllib.request
+from django.http import HttpResponseRedirect, Http404
 from django.conf import settings
 
-class LoginAuth(JsonApiMixin, View):
+
+class LoginAuth(APIView):
     '''
     用户登录接口
     '''
-    def post(self, request, *args, **kwargs):
+    def post(self, request,format=None, *args, **kwargs):
         
-        param = json.loads(request.body, strict=False)
+        param = get_parameter_dic(request)
         paramdict = {} # 参数字典
         identifier = param['username']
         credential = param['password']
@@ -43,15 +43,18 @@ class LoginAuth(JsonApiMixin, View):
             token = result[0]['u_id']
             result_dict = {'token': token}
         else:
-            return self.render_to_response(code=401.1, msg='Login failed, Password mistake!', data={})
-        return self.render_to_response(code=200, msg='success', data=result_dict)
-class LoginInfo(JsonApiMixin, View):
+            temp = {'code':401.1, 'msg':'Login failed, Password mistake!', 'data':{} }
+            return Response(temp)
+        result_data = {'code': 200,'msg':'success', 'data': result_dict }
+        return Response(result_data)
+class LoginInfo(APIView):
     '''
     获取用户信息
     '''
     def get(self, request, *args, **kwargs):
-        token = request.GET.get('token', '')
-
+        token = param = request.GET.get('token', '')
+        # param  = get_parameter_dic(request)
+        # token = param['token']
         result = UserInfo.objects.filter(u_id=token).values()
         result_dict = result[0]
         
@@ -69,27 +72,30 @@ class LoginInfo(JsonApiMixin, View):
             '喜欢': '宝宝',
             '爱好': 'zhouzhou' 
             }
-        return self.render_to_response(code=200, msg='success', data=result_dict)
+        result_data = {'code': 200,'msg':'success', 'data': result_dict }
+        return Response(result_data)
 
 
-class LoginOut(JsonApiMixin, View):
+class LoginOut(APIView):
     '''
     登出接口
     '''
     def post(self, request, *args, **kwargs):
         result_dict = {}
-        return self.render_to_response(code=200, msg='success', data=result_dict)
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)
 
-
-class Regedit(JsonApiMixin, View):
+class Regedit(APIView):
     '''
     用户表单注册接口 邮箱email，手机号mobile三种方式注册
     '''
     def post(self, request, *args, **kwargs):
-        param = json.loads(request.body, strict=False)
-        identifier = param['identifier'] # 身份唯一标识
-        credential = param['credential'] # 授权凭证
-        nickname = param['nickname'] # 昵称
+        params = get_parameter_dic(request)
+        print(params)
+        # param = json.loads(request.body, strict=False)
+        identifier = params['identifier'] # 身份唯一标识
+        credential = params['credential'] # 授权凭证
+        nickname = params['nickname'] # 昵称
         verified = True
         avatar = settings.AVATAR
         createtime = str(int(time.time()))
@@ -117,13 +123,13 @@ class Regedit(JsonApiMixin, View):
                 if res1[1]:
                     token = u_id
             else:
-                return self.render_to_response(code=400, msg='注册失败', data={})
+                return Response({'code':400, 'msg':'注册失败', 'data':{}})
         except Exception as err:
-            return self.render_to_response(code=400, msg='注册失败' + eer, data={})
+            return Response({'code':400, 'msg':'注册失败', 'data':{}})
        
-        result_dict = {'token': token}
-        return self.render_to_response(code=200, msg='success', data=result_dict)
-
+        result_data = {'code': 200,'msg':'success', 'data': {'token': token} }
+        return Response(result_data)
+    
     def get(self, request, *args, **kwargs):
         '''
         判断用户是否存在
@@ -135,11 +141,10 @@ class Regedit(JsonApiMixin, View):
             result_dict['identifier'] = result[0]['identifier']
         else:
             result_dict['identifier'] = ''
-        
-        return self.render_to_response(code=200, msg='success', data=result_dict)
+        return Response({'code': 200,'msg':'success', 'data': result_dict })
 
 
-class GithubCheck(JsonApiMixin, View):
+class GithubCheck(APIView):
     '''
     github第三方登录 Github 回调类
     '''
@@ -150,7 +155,6 @@ class GithubCheck(JsonApiMixin, View):
         #获取access_token
         access_token = get_access_token(request_code)
         
-        print(access_token)
         # 获取用户信息
         temp = get_github_userinfo(access_token)
         if  temp['eer'] == '':
@@ -194,9 +198,9 @@ class GithubCheck(JsonApiMixin, View):
                     if res1[1]:
                         token = str(u_id)
                     else:
-                        return self.render_to_response(code=400, msg='注册失败', data={})
+                        return Response({'code':400, 'msg':'注册失败', 'data':{}})
             except Exception as err:
-                return self.render_to_response(code=400, msg='注册失败', data={})
+                return Response({'code':400, 'msg':'注册失败', 'data':{}})
         
         return HttpResponseRedirect(settings.LOCAL_URL + '/user/github?token='+ token )
 

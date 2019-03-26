@@ -1,0 +1,17 @@
+Django==2.0.2
+django-crispy-forms
+django-import-export
+django-reversion
+django-formtools==2.1
+django-registration
+django-rest-swagger
+djangorestframework
+future==0.15.2
+httplib2==0.9.2
+xlwt
+xlsxwriter
+pymysql
+requests
+reversion
+django-cors-headers
+
