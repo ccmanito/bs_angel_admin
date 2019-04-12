@@ -2,7 +2,7 @@
 cd "$(dirname $0)"/ || exit 1
 
 PROC_NAME=python3  #进程名
-PROC_PORT=8000 #进程端口
+PROC_PORT=7080 #进程端口
 WAIT_TIME=5 # 等待启动/停止时间
 RELEASE_PORT_TIME=5 # 释放端口时间
 PROC_NAME_CUT=${PROC_NAME::15}  #防止进程名过程，截取15字节
