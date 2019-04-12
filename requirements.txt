@@ -12,4 +12,5 @@ pymysql
 requests
 reversion
 django-cors-headers
+django-cors-middleware
 

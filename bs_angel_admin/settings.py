@@ -42,18 +42,50 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
+    'corsheaders',
     'login',
-)
+) 
 
-MIDDLEWARE_CLASSES = (
-     'django.middleware.common.CommonMiddleware',
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'apps.cmw_user.utils.middleware.UserAuthMiddle',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# 跨域增加忽略
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    '*'
 )
+CORS_ALLOW_METHODS = (
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+)
+#部署到云服务上必备
+ALLOWED_HOSTS = ['*']
 
 ROOT_URLCONF = 'bs_angel_admin.urls'
 
@@ -84,7 +116,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bs_angel',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '123456',
         'HOST': '127.0.0.1',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '3306',              
     }

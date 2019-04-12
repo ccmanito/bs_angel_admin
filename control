@@ -38,8 +38,8 @@ start(){
         echo "[WARN] $PROC_NAME is aleady running!"
         return 0
     fi
-    cd /export/Packages/hodor/latest/hodor
-    python3 manage.py runserver 0.0.0.0:8000  &
+    cd /root/workdir/bs_angel/bs_angel_admin
+    python manage.py runserver 0.0.0.0:7080  &
 
     for i in $(seq $WAIT_TIME) ; do
         sleep 1
