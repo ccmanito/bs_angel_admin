@@ -39,6 +39,7 @@ start(){
         return 0
     fi
     cd /root/workdir/bs_angel/bs_angel_admin
+    soucre ./.env/bin/activate
     python manage.py runserver 0.0.0.0:7080  &
 
     for i in $(seq $WAIT_TIME) ; do
