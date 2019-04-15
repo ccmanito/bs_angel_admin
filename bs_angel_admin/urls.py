@@ -16,7 +16,8 @@ Including another URLconf
 """
 from django.urls import path,include,re_path
 from login import urls as login_urls
-
+from login.views import GetQuniu
 urlpatterns = [
     path(r'user/', include(login_urls)),
+    path(r'qiniu/token', GetQuniu.as_view()),
 ]

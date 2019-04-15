@@ -4,11 +4,10 @@ from django.db import models
 
 class UserAuth(models.Model):
     u_id =  models.IntegerField(default=0) # 作为userinfo表的外键
-    identity_type = models.CharField(max_length=20) # 身份类型（站内username 邮箱email 手机mobile 或者第三方的qq weibo weixin等等）
-    identifier = models.CharField(max_length=20) # 身份唯一标示，登录的账号（手机号，邮箱，第三方唯一标示）
-    credential = models.CharField(max_length=100) # 授权凭证 （密码，第三方登录的token）
-    createtime = models.CharField(max_length=100) # 创建时间
-    verified = models.BooleanField(default=False)   # 是否已经验证（存储 1、0 来区分是否已经验证通过）
+    identity_type = models.CharField(max_length=20, verbose_name=u'身份类型')
+    identifier = models.CharField(max_length=20, verbose_name=u'身份唯一标示，登录的账号（手机号，邮箱，第三方唯一标示')
+    credential = models.CharField(max_length=100, verbose_name=u'授权凭证 （密码，第三方登录的token）')
+    verified = models.BooleanField(default=False, verbose_name=u'是否已经验证')
     
     def __str__(self):
         return self.name
@@ -23,20 +22,23 @@ class UserInfo(models.Model):
     '''
     u_id = models.AutoField(primary_key=True)
     roles = models.IntegerField(default=1)
-    nickname = models.CharField(max_length=100) #昵称
-    sex = models.CharField(max_length=20)
-    email = models.CharField(max_length=50)
-    mobile = models.CharField(max_length=20)
-    github = models.CharField(max_length=20)
-    avatar = models.CharField(max_length=2048) #头像
-    school = models.CharField(max_length=20)
-    college = models.CharField(max_length=20)
-    major = models.CharField(max_length=20)
-    grade = models.CharField(max_length=20)
-    classname = models.CharField(max_length=20)
-    professional = models.CharField(max_length=20)
-    interests = models.TextField()
-    livinghabits = models.TextField()
+    nickname = models.CharField(max_length=100, verbose_name=u'昵称')
+    sex = models.CharField(default='男', max_length=20)
+    email = models.CharField(max_length=50, null=True)
+    mobile = models.CharField(max_length=20, null=True)
+    github = models.CharField(max_length=20, null=True)
+    avatar = models.CharField(max_length=2048, null=True, verbose_name=u'头像')
+    school = models.CharField(max_length=20, null=True)
+    college = models.CharField(max_length=20, null=True, verbose_name=u'学院')
+    major = models.CharField(max_length=20, null=True, verbose_name=u'专业')
+    grade = models.CharField(max_length=20, null=True, verbose_name=u'年级')
+    classname = models.CharField(max_length=20, null=True, verbose_name=u'班级')
+    professional = models.CharField(max_length=20, null=True, verbose_name=u'职业')
+    interests = models.TextField(null=True, verbose_name=u'兴趣爱好')
+    livinghabits = models.TextField(null=True, verbose_name=u'生活习惯')
+    dorm_id = models.IntegerField(null=True, verbose_name=u'宿舍ID')
+    status = models.IntegerField(null=True, verbose_name=u'宿舍分配状态（（0待分配,1分配中,2 已分配））')
+    createtime = models.CharField(max_length=100, verbose_name=u'创建时间')
 
 
     def __str__(self):

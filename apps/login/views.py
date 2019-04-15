@@ -2,6 +2,7 @@
 #-*- coding:utf-8 -*-
 
 from rest_framework.views import APIView
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.request import Request
 from .controller import *
@@ -9,8 +10,8 @@ from .models import *
 from .common import get_parameter_dic
 import time,json,requests,hashlib
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, Http404
-from django.conf import settings
+from django.http import HttpResponseRedirect, Http404, HttpResponse
+from qiniu import Auth
 
 
 class LoginAuth(APIView):
@@ -47,6 +48,7 @@ class LoginAuth(APIView):
             return Response(temp)
         result_data = {'code': 200,'msg':'success', 'data': result_dict }
         return Response(result_data)
+
 class LoginInfo(APIView):
     '''
     获取用户信息
@@ -74,7 +76,6 @@ class LoginInfo(APIView):
             }
         result_data = {'code': 200,'msg':'success', 'data': result_dict }
         return Response(result_data)
-
 
 class LoginOut(APIView):
     '''
@@ -106,18 +107,18 @@ class Regedit(APIView):
         try:
             if '@' in identifier:
                 identity_type = 'email'
-                res = UserInfo.objects.get_or_create(email=identifier, nickname=nickname, avatar=avatar)
+                res = UserInfo.objects.get_or_create(email=identifier, nickname=nickname, avatar=avatar, createtime=createtime)
                 resset = UserInfo.objects.filter(email=identifier).values()
             else:
                 identity_type = 'mobile'
-                res = UserInfo.objects.get_or_create(mobile=identifier, nickname=nickname, avatar=avatar) # 返回的是元祖 （data，true）
+                res = UserInfo.objects.get_or_create(mobile=identifier, nickname=nickname, avatar=avatar,  createtime=createtime) # 返回的是元祖 （data，true）
                 resset = UserInfo.objects.filter(mobile=identifier).values()
             # 拿到u_id
             if res[1]:
                 u_id = resset[0]['u_id'] #int
 
                 res1 = UserAuth.objects.get_or_create(identifier=identifier, identity_type=identity_type, 
-                    credential = credential, createtime=createtime, u_id=u_id, verified=verified)
+                    credential = credential, u_id=u_id, verified=verified)
                 if res1[1]:
                     token = u_id
             else:
@@ -141,7 +142,6 @@ class Regedit(APIView):
             result_dict['identifier'] = ''
         return Response({'code': 200,'msg':'success', 'data': result_dict })
 
-
 class GithubCheck(APIView):
     '''
     github第三方登录 Github 回调类
@@ -155,6 +155,8 @@ class GithubCheck(APIView):
         
         # 获取用户信息
         temp = get_github_userinfo(access_token)
+        
+        githubinfo = {}
         if  temp['eer'] == '':
             github_userinfo = temp['result']
             # 初始化一些参数
@@ -182,27 +184,129 @@ class GithubCheck(APIView):
             UserAuth.objects.filter(identity_type='Github', identifier=identifier).update(credential=credential)
             resset = UserAuth.objects.filter(identity_type='Github', identifier=identifier).values()
             token = str(resset[0]['u_id'])
+        
         else:
             ''' 该用户不存在，注册'''
-            try:
-                res = UserInfo.objects.get_or_create(github=github, nickname=nickname, avatar=avatar) # 返回的是元祖 （data，true）
-                resset = UserInfo.objects.filter(github=github).values()
-            # 拿到u_id
-                if res[1]:
-                    u_id = resset[0]['u_id'] #int
-                    createtime = str(int(time.time()))
-                    res1 = UserAuth.objects.get_or_create(identifier=identifier, identity_type=identity_type, 
-                    credential = credential, createtime=createtime, u_id=u_id, verified=True)
-                    if res1[1]:
-                        token = str(u_id)
-                    else:
-                        return Response({'code':400, 'msg':'注册失败', 'data':{}})
-            except Exception as err:
-                return Response({'code':400, 'msg':'注册失败', 'data':{}})
+            # 绑定站内信息
+            githubinfo = {}
+            githubinfo['identifier'] = identifier
+            githubinfo['credential'] = credential
+            githubinfo['github'] = github
+            githubinfo['nickname'] = nickname
+            githubinfo['identity_type'] = identity_type
+            githubinfo['avatar'] = avatar
+
+            return render(request, 'login/home.html', {'githubinfo': githubinfo })
+           
         
         return HttpResponseRedirect(settings.LOCAL_URL + '/user/github?token='+ token )
 
-# 重定向渲染函数
+class GetQuniu(APIView):
+    '''
+    图片上传七牛云相关接口
+    '''
+    def get(self, request, *args, **kwargs):
+        #需要填写你的 Access Key 和 Secret Key
+        access_key = settings.QINIU_ACCESS_KEY
+        secret_key = settings.QINIU_SECRET_KEY
+        #构建鉴权对象
+        q = Auth(access_key, secret_key)
+        #要上传的空间
+        bucket_name = 'bs_angel'
+
+        key = None
+        # 生成上传 Token，可以指定过期时间等
+        token = q.upload_token(bucket_name, key, 3600)
+
+        res = {'code': 200,'msg':'success', 'data': {'token': token} }
+        return Response(res)
+
+class Syncavatar(APIView):
+    '''
+    更改用户头像，实时同步
+    '''
+    def post(self, request, *args, **kwargs):
+        params = get_parameter_dic(request)
+        u_id = params['token']
+        avatar = params['avatar']
+        UserInfo.objects.filter(u_id=u_id).update(avatar=avatar)
+        res = {'code': 200,'msg':'success', 'data': {} }
+        return Response(res)
+
 def github(request):
+    '''
+    # 重定向渲染函数
+    '''
     token = request.GET.get('token')
     return render(request, 'login/index.html', {'token': token})
+
+def BindAccount(requests):
+    '''
+    第三方登录，站内账户绑定接口
+    '''
+    identifier = requests.POST.get('identifier', None)
+    credential = requests.POST.get('credential', None)
+    githubinfo = requests.POST.get('githubinfo', None)
+    githubinfo = eval(githubinfo)
+    md5 = hashlib.md5()
+    #实例化md5加密方法
+    md5.update(credential.encode())
+    #进行加密，python2可以给字符串加密，python3只能给字节加密
+    credential = md5.hexdigest()
+    paramdict = {
+        'identifier': identifier,
+        'credential': credential,
+        }
+        
+        #  数据库操作，匹配账户信息
+    result = UserAuth.objects.filter(**paramdict).values()
+    if result:
+        # 存在账户，对信息进行合并
+        try:
+            paraminfo = {
+                'github': githubinfo['github']
+            }
+            u_id = result[0]['u_id']
+            resset = UserInfo.objects.filter(u_id=u_id).values()
+            if  not resset[0]['avatar']:
+                paraminfo['avatar'] = githubinfo['avatar']
+            if  not resset[0]['nickname']:
+                paraminfo['nickname'] = githubinfo['nickname']
+            UserInfo.objects.filter(u_id=u_id).update(**paraminfo)
+            
+            # 创建登录凭证
+            createtime = str(int(time.time()))
+            UserAuth.objects.get_or_create(identifier=githubinfo['identifier'], identity_type=githubinfo['identity_type'], 
+                    credential =githubinfo['credential'], u_id=u_id, verified=True)
+            
+        except Exception:
+            return HttpResponse('false')
+        
+        return HttpResponse(u_id)
+    else:
+        # 不存在返回
+        return HttpResponse('false')
+
+def BindAccount2(requests):
+    '''
+    第三方登录，第一次登录不绑定站内账号，选择跳过走这个接口
+    '''
+    githubinfo = requests.POST.get('githubinfo', None)
+    githubinfo = eval(githubinfo)
+    try:
+        createtime = str(int(time.time()))
+        res = UserInfo.objects.get_or_create(github=githubinfo['github'], nickname=githubinfo['nickname'], avatar=githubinfo['avatar'], createtime=createtime) # 返回的是元祖 （data，true）
+        resset = UserInfo.objects.filter(github=githubinfo['github'],createtime=createtime).values()
+        # 拿到u_id
+        if res[1]:
+            u_id = resset[0]['u_id'] #int
+            res1 = UserAuth.objects.get_or_create(identifier=githubinfo['identifier'], identity_type=githubinfo['identity_type'], 
+            credential = githubinfo['credential'], u_id=u_id, verified=True)
+            if res1[1]:
+                token = str(u_id)
+            else:
+                token = ''
+    except Exception as s:
+        return HttpResponse(s)
+    
+    return HttpResponse(u_id) 

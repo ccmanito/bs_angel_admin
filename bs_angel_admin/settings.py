@@ -25,10 +25,11 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '#mb@j9r8&g!1#!9wskx#%e#^ty582pmib^isn9+^4qq0ih*ltx'
 
+# qiniu KEY
+QINIU_ACCESS_KEY = 'BcM4U6mciW4jUpbkc_UNl4-QjMLs24m7_-rhIYEu'
+QINIU_SECRET_KEY = 'JKlgYOmQ7_HgiCpPnDUEYTK5TBAD898bBum0O_9s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -83,6 +84,9 @@ CORS_ALLOW_HEADERS = (
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'X-File-Name',
+    'X-File-Type',
+    'X-File-Size',
 )
 #部署到云服务上必备
 ALLOWED_HOSTS = ['*']

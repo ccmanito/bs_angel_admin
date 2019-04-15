@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <title>第三方登录成功</title>
+</head>
+<body style="background-color: #F2F6FC;">
+        <div id="Container">
+        <div style="background-color:#FFFFFF;height: 30px;"></div>
+        <div id="header"> 
+            <div class="tatle" style="padding: 20px;">
+                <h2>Bs_Angel</h2>
+                <p style="line-height:30px"> 欢迎登入西安邮电大学基于人性化的新生宿舍分配辅助系统，如有站内账号？在下方绑定账号，没有则直接点击 &nbsp;&nbsp;
+                    <button type="button" class="yongyin" onclick="skip()" style="width:70px; height:30px;margin-top: 5px">跳过</button></p>
+            </div>
+        </div>
+        <div id="main">
+          <hr style="margin-top: -20px" width="100%" color="#987cb9" SIZE="2">
+            <div class="from">
+                <from>
+                   站内ID: <input type="text" name="identifier" id="identifier" placeholder="请输入手机号或者email"> <br>
+                   密码: <input type="password" name="credential" id="credential" placeholder="请输入密码"> <br>
+                   <input type="hidden" name="githubinfo" id="githubinfo" value="{{githubinfo}}"/>
+                </from>
+                <button type="button" class="yongyin" onclick="sub()" style="width:70px; height:30px;"> 提交</button>
+            </div>
+            
+        </div>
+        </div>
+        <script type="text/javascript">
+            function sub() {
+                $.ajax({  
+                cache: true,  
+                type: "POST",  
+                url:"/user/bind", 
+                data: {'githubinfo': document.getElementById("githubinfo").value, 'identifier': document.getElementById("identifier").value , 'credential': document.getElementById("credential").value},
+                async: false,  
+                error: function(request) {  
+                    alert("Connection error:"+request.error);
+                },  
+                success: function(data) { 
+                    if (data === 'false' ) {
+                        alert('绑定失败！ 该账号不存在')
+                        
+                    } else {
+                        const res = confirm('恭喜你！ 绑定成功，按确认键跳转到系统首页')
+                        if (res) {
+                            location.href="/user/github?"+"token="+encodeURI(data);
+                        }
+                    }
+                }  
+            });
+        }
+        function skip() {
+                $.ajax({  
+                cache: true,  
+                type: "POST",  
+                url:"/user/bind/skip", 
+                data: {'githubinfo': document.getElementById("githubinfo").value},
+                async: false,  
+                error: function(request) {  
+                    alert("Connection error:"+request.error);
+                },  
+                success: function(data) { 
+                    const res = confirm('确认跳过？')
+                    if (res) {
+                        location.href="/user/github?"+"token="+encodeURI(data);
+                    }
+                }
+                });
+            }  
+            </script>
+<style>
+#container {
+width:500px;
+margin:0px auto;/*主面板DIV居中*/
+background-color: #F2F6FC;
+}
+#header {
+width:100%;
+margin-top: -20px;
+background-color: #FFFFFF;
+}
+#main {
+width:100%;
+height:410px;
+margin:0 auto;
+background-color: #FFFFFF;
+}
+.from {
+    margin-top: 40px;
+    margin-right: 200px;
+    text-align: right;
+    line-height: 50px;
+}
+/*底部面板样式*/
+#footer {
+width:100%;
+height:150px;
+background-color: #FFFFFF;
+}
+.yongyin {
+     width:100px;
+     text-align:center;
+     line-height:100%;
+     padding:0.3em;
+     font:16px Arial,sans-serif bold;
+     font-style:normal;
+     text-decoration:none;
+     margin:2px;
+     vertical-align:text-bottom;
+     zoom:1;
+     outline:none;
+     font-size-adjust:none;
+     font-stretch:normal;
+     border-radius:50px;
+     box-shadow:0px 1px 2px rgba(0,0,0,0.2);
+     text-shadow:0px 1px 1px rgba(0,0,0,0.3);
+     color:#fefee9;
+     border:0.2px solid #67C23A;
+     background-repeat:repeat;
+     background-size:auto;
+     background-origin:padding-box;
+     background-clip:padding-box;
+     background-color:#67C23A;
+     background: linear-gradient(to bottom, #eeeff9 0%,#67C23A 100%);
+}
+.yongyin:hover {
+    background: #67C23A;
+}
+</style>
+</body>
+</html>
