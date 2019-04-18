@@ -22,7 +22,7 @@ class UserInfo(models.Model):
     '''
     u_id = models.AutoField(primary_key=True)
     roles = models.IntegerField(default=1)
-    nickname = models.CharField(max_length=100, verbose_name=u'昵称')
+    name = models.CharField(max_length=100, verbose_name=u'昵称')
     sex = models.CharField(default='男', max_length=20)
     email = models.CharField(max_length=50, null=True)
     mobile = models.CharField(max_length=20, null=True)

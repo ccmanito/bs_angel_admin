@@ -51,12 +51,13 @@ class LoginAuth(APIView):
 
 class LoginInfo(APIView):
     '''
-    获取用户信息
+    用户信息管理
     '''
     def get(self, request, *args, **kwargs):
+        '''
+        获取用户信息
+        '''
         token = param = request.GET.get('token', '')
-        # param  = get_parameter_dic(request)
-        # token = param['token']
         result = UserInfo.objects.filter(u_id=token).values()
         result_dict = result[0]
         
@@ -69,12 +70,36 @@ class LoginInfo(APIView):
             result_dict['roles'] = ['student']
         print(result_dict['roles'])
         result_dict['avatar'] = result_dict.pop('avatar')
-        result_dict['name'] = result_dict.pop('nickname')
-        result_dict['interest'] = {
-            '喜欢': '宝宝',
-            '爱好': 'zhouzhou' 
-            }
+        result_dict['name'] = result_dict.pop('name')
         result_data = {'code': 200,'msg':'success', 'data': result_dict }
+        return Response(result_data)
+    def post(self, request, *args, **kwargs):
+        '''
+        修改用户信息
+        '''
+        params = get_parameter_dic(request)
+        tempdict = params.get('baseinfo')
+        
+        #字段过滤
+        token = tempdict.pop('token')
+        tempdict.pop('usertype')
+        
+        # 权限处理
+        if tempdict['roles'] == ['admin']:
+            tempdict['roles'] = 3
+        elif tempdict['roles'] == ['teacher']:
+            tempdict['roles'] = 2
+        else:
+            tempdict['roles'] = 1
+
+        tempdict['livinghabits'] = params.get('habits')
+        tempdict['interests'] = params.get('interests')
+        try:
+            UserInfo.objects.filter(u_id=token).update(**tempdict)
+        except Exception:
+            result_data = {'code': 200,'msg':'success', 'data': {} }
+            return Response(result_data)
+        result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
 
 class LoginOut(APIView):
@@ -94,7 +119,7 @@ class Regedit(APIView):
         params = get_parameter_dic(request)
         identifier = params['identifier'] # 身份唯一标识
         credential = params['credential'] # 授权凭证
-        nickname = params['nickname'] # 昵称
+        name = params['name'] # 昵称
         verified = True
         avatar = settings.AVATAR
         createtime = str(int(time.time()))
@@ -107,11 +132,11 @@ class Regedit(APIView):
         try:
             if '@' in identifier:
                 identity_type = 'email'
-                res = UserInfo.objects.get_or_create(email=identifier, nickname=nickname, avatar=avatar, createtime=createtime)
+                res = UserInfo.objects.get_or_create(email=identifier, name=name, avatar=avatar, createtime=createtime)
                 resset = UserInfo.objects.filter(email=identifier).values()
             else:
                 identity_type = 'mobile'
-                res = UserInfo.objects.get_or_create(mobile=identifier, nickname=nickname, avatar=avatar,  createtime=createtime) # 返回的是元祖 （data，true）
+                res = UserInfo.objects.get_or_create(mobile=identifier, name=name, avatar=avatar,  createtime=createtime) # 返回的是元祖 （data，true）
                 resset = UserInfo.objects.filter(mobile=identifier).values()
             # 拿到u_id
             if res[1]:
@@ -165,9 +190,9 @@ class GithubCheck(APIView):
             github = github_userinfo['login']
             identity_type = 'github'
             if not github_userinfo['name']:
-                nickname = github
+                name = github
             else:
-                nickname = github_userinfo['name'] # 昵称
+                name = github_userinfo['name'] # 昵称
             if not github_userinfo['avatar_url']:
                 avatar = settings.AVATAR
             else:
@@ -192,7 +217,7 @@ class GithubCheck(APIView):
             githubinfo['identifier'] = identifier
             githubinfo['credential'] = credential
             githubinfo['github'] = github
-            githubinfo['nickname'] = nickname
+            githubinfo['name'] = name
             githubinfo['identity_type'] = identity_type
             githubinfo['avatar'] = avatar
 
@@ -270,8 +295,8 @@ def BindAccount(requests):
             resset = UserInfo.objects.filter(u_id=u_id).values()
             if  not resset[0]['avatar']:
                 paraminfo['avatar'] = githubinfo['avatar']
-            if  not resset[0]['nickname']:
-                paraminfo['nickname'] = githubinfo['nickname']
+            if  not resset[0]['name']:
+                paraminfo['name'] = githubinfo['name']
             UserInfo.objects.filter(u_id=u_id).update(**paraminfo)
             
             # 创建登录凭证
@@ -295,7 +320,7 @@ def BindAccount2(requests):
     githubinfo = eval(githubinfo)
     try:
         createtime = str(int(time.time()))
-        res = UserInfo.objects.get_or_create(github=githubinfo['github'], nickname=githubinfo['nickname'], avatar=githubinfo['avatar'], createtime=createtime) # 返回的是元祖 （data，true）
+        res = UserInfo.objects.get_or_create(github=githubinfo['github'], name=githubinfo['name'], avatar=githubinfo['avatar'], createtime=createtime) # 返回的是元祖 （data，true）
         resset = UserInfo.objects.filter(github=githubinfo['github'],createtime=createtime).values()
         # 拿到u_id
         if res[1]:
