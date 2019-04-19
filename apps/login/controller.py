@@ -4,6 +4,7 @@ import re
 import urllib.request
 from urllib.request import Request, urlopen
 import requests
+import hashlib
 from django.conf import settings
 
 OAUTH_GITHUB_CONFIG  = settings.OAUTH_GITHUB_CONFIG
@@ -55,3 +56,16 @@ def get_github_userinfo(access_token):
     except Exception as eer:
         req['eer'] = eer
     return req
+
+
+def passwd_fomt(msg):
+    '''
+    密码MD5加密
+    '''
+    credential = msg
+    md5 = hashlib.md5()
+    #实例化md5加密方法
+    md5.update(credential.encode())
+    #进行加密，python2可以给字符串加密，python3只能给字节加密
+    credential = md5.hexdigest()
+    return credential

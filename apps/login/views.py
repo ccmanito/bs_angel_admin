@@ -12,6 +12,7 @@ import time,json,requests,hashlib
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from qiniu import Auth
+import json
 
 
 class LoginAuth(APIView):
@@ -68,7 +69,6 @@ class LoginInfo(APIView):
             result_dict['roles'] = ['teacher']
         else:
             result_dict['roles'] = ['student']
-        print(result_dict['roles'])
         result_dict['avatar'] = result_dict.pop('avatar')
         result_dict['name'] = result_dict.pop('name')
         result_data = {'code': 200,'msg':'success', 'data': result_dict }
@@ -78,27 +78,56 @@ class LoginInfo(APIView):
         修改用户信息
         '''
         params = get_parameter_dic(request)
+        
+        # 获取参数
         tempdict = params.get('baseinfo')
+        tempdict['livinghabits'] = params.get('habits')
+        tempdict['interests'] = params.get('interests')
+        passwordlist = params.get('passwordlist')
         
         #字段过滤
         token = tempdict.pop('token')
         tempdict.pop('usertype')
+        tempdict.pop('roles')
         
-        # 权限处理
-        if tempdict['roles'] == ['admin']:
-            tempdict['roles'] = 3
-        elif tempdict['roles'] == ['teacher']:
-            tempdict['roles'] = 2
-        else:
-            tempdict['roles'] = 1
-
-        tempdict['livinghabits'] = params.get('habits')
-        tempdict['interests'] = params.get('interests')
+        try:
+            if passwordlist != False:
+                # 绑定账号 
+                if passwordlist['emailpasswd'] != '':
+                    # 绑定email
+                
+                    # 密码MD5加密
+                    credential = passwd_fomt(passwordlist['emailpasswd'])
+                
+                    UserAuth.objects.filter(u_id=token, identity_type='email').delete()
+                    UserAuth.objects.create(identifier=tempdict['email'], identity_type='email', 
+                        credential = credential , u_id=token, verified=1)
+            
+                elif passwordlist['mobilepasswd'] != '':
+                    # 绑定 mobile
+                    credential = passwd_fomt(passwordlist['mobilepasswd'])
+                    UserAuth.objects.filter(u_id=token, identity_type='mobile').delete()
+                    UserAuth.objects.create(identifier=tempdict['mobile'], identity_type='mobile', 
+                        credential = credential , u_id=token, verified=1)
+                else:
+                    credential = passwd_fomt(passwordlist['twopasswd'])
+                    UserAuth.objects.filter(u_id=token, identity_type='mobile').delete()
+                    UserAuth.objects.filter(u_id=token, identity_type='email').delete()
+                    UserAuth.objects.create(identifier=tempdict['mobile'], identity_type='mobile', 
+                        credential = credential , u_id=token, verified=1)
+                    UserAuth.objects.create(identifier=tempdict['email'], identity_type='email', 
+                        credential = credential , u_id=token, verified=1)  
+        except Exception:
+            UserInfo.objects.filter(u_id=token).update(**tempdict)
+            result_data = {'code': 200,'msg':'success', 'data': {} }
+            return Response(result_data)
+        
         try:
             UserInfo.objects.filter(u_id=token).update(**tempdict)
         except Exception:
             result_data = {'code': 200,'msg':'success', 'data': {} }
             return Response(result_data)
+        
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
 
@@ -124,11 +153,7 @@ class Regedit(APIView):
         avatar = settings.AVATAR
         createtime = str(int(time.time()))
         # 数据对象操作
-        md5 = hashlib.md5()
-        #实例化md5加密方法
-        md5.update(credential.encode())
-        #进行加密，python2可以给字符串加密，python3只能给字节加密
-        credential = md5.hexdigest()
+        credential = passwd_fomt(credential)
         try:
             if '@' in identifier:
                 identity_type = 'email'
@@ -159,12 +184,36 @@ class Regedit(APIView):
         判断用户是否存在
         '''
         param = request.GET.get('str', '')
-        result = UserAuth.objects.filter(identifier = param).values()
+        
+        
+        source = request.GET.get('source')
         result_dict = {}
-        if result:
-            result_dict['identifier'] = result[0]['identifier']
+        if source == 'true':
+            result = UserAuth.objects.filter(identifier = param).values()
+            if result:
+                result_dict['identifier'] = result[0]['identifier']
+            else:
+                result_dict['identifier'] = ''
         else:
-            result_dict['identifier'] = ''
+            try:
+                token = int(request.META.get("HTTP_TOKEN"))
+            except Exception:
+                result_dict = {}
+                result_dict['identifier'] = ''
+                return Response({'code': 200,'msg':'success', 'data': result_dict })
+            templist = []
+            res = UserInfo.objects.filter(u_id=token).values()
+            templist.append(res[0]['email'])
+            templist.append(res[0]['mobile'])
+            if param in templist:
+                
+                result_dict['identifier'] = ''
+            else:
+                result = UserAuth.objects.filter(identifier = param).values()
+                if result:
+                    result_dict['identifier'] = result[0]['identifier']
+                else:
+                    result_dict['identifier'] = ''
         return Response({'code': 200,'msg':'success', 'data': result_dict })
 
 class GithubCheck(APIView):

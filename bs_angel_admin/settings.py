@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'corsheaders',
     'login',
+    'system',
 ) 
 
 MIDDLEWARE = [
@@ -81,6 +82,7 @@ CORS_ALLOW_HEADERS = (
     'content-type',
     'dnt',
     'origin',
+    'token',
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
