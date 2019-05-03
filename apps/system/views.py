@@ -51,3 +51,35 @@ class InterestDispose(APIView):
         params = get_parameter_dic(request)
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
+
+
+class SchoolDetail(APIView):
+    '''
+    校园基本信息管理
+    '''
+    def get(self, request,format=None, *args, **kwargs):
+        pass
+
+    def post(self, request,format=None, *args, **kwargs):
+        '''
+        添加学校信息
+        '''
+        params = get_parameter_dic(request)
+
+        school = params.get('school', '')
+        college = params.get('college' '')
+        major = params.get('major', '')
+        grade = params.get('grade', '')
+        classname = params.get('classname', '')
+        try:
+            SchoolInfo.objects.get_or_create(school=school, college=college, 
+                        major = major , grade=grade, classname=classname)
+        except Exception:
+            result_data = {'code': 200,'msg':'success', 'data': {} }
+            return Response(result_data)
+        
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)
+
+    def put(self, request,format=None, *args, **kwargs):
+        pass

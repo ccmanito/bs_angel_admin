@@ -44,8 +44,10 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework_swagger',
     'corsheaders',
+    'django_apscheduler',
     'login',
     'system',
+    'worker',
 ) 
 
 MIDDLEWARE = [

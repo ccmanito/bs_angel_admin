@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from .controller import *
 from .models import *
+from system.models import SchoolInfo
 from .common import get_parameter_dic
 import time,json,requests,hashlib
 from django.shortcuts import render
@@ -61,7 +62,10 @@ class LoginInfo(APIView):
         token = param = request.GET.get('token', '')
         result = UserInfo.objects.filter(u_id=token).values()
         result_dict = result[0]
-        
+        school = '西安邮电大学'
+        res = SchoolInfo.objects.filter(school=school).values()
+        print(res)
+        # schoolinfo = {}
         # 权限处理
         if result_dict['roles'] == 3:
             result_dict['roles'] = ['admin']
@@ -71,6 +75,7 @@ class LoginInfo(APIView):
             result_dict['roles'] = ['student']
         result_dict['avatar'] = result_dict.pop('avatar')
         result_dict['name'] = result_dict.pop('name')
+        result_dict['schoolinfo'] = res[0]
         result_data = {'code': 200,'msg':'success', 'data': result_dict }
         return Response(result_data)
     def post(self, request, *args, **kwargs):

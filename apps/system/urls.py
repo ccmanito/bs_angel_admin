@@ -6,4 +6,5 @@ from system import views
 
 urlpatterns = [
         path(u'interest', views.InterestDispose.as_view(), name='兴趣爱好信息管理'),
+        path(u'school/info', views.SchoolDetail.as_view(), name='兴趣爱好信息管理'),
 ]
