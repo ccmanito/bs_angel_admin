@@ -24,5 +24,5 @@ def regularly(timestr, args):
     # scheduler.add_job(job_func, 'date', run_date=datetime(2017, 12, 13, 14, 0, 0), args=['text'])
     # 在 2017-12-13 14:00:01 时刻运行一次 job_func 方法
     scheduler.add_job(job_func, 'date', run_date=timestr, args=args)
-    
+    print(args)
     scheduler.start()

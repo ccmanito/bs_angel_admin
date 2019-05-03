@@ -64,7 +64,6 @@ class LoginInfo(APIView):
         result_dict = result[0]
         school = '西安邮电大学'
         res = SchoolInfo.objects.filter(school=school).values()
-        print(res)
         # schoolinfo = {}
         # 权限处理
         if result_dict['roles'] == 3:

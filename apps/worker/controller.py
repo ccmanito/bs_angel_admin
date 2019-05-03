@@ -17,7 +17,27 @@ def format_time(msg):
     if len(str(msg)) == 13:
         timeStamp  = int(msg) / 1000
     else:
-        timeStamp = msg
+        timeStamp = int(msg)
     timeArray = time.localtime(timeStamp)
     res = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
     return res
+
+def countdown(msg):
+    '''
+    距离该时间计算函数
+    '''
+    now = int(time.time())
+    endtime = int( int(msg) / 1000)
+    countdown = (endtime - now)
+    if countdown < 3600  and countdown > 0:
+        temp  = str(float( '%.2f' % (countdown / 60)))
+        res = temp + '分钟'
+    elif countdown > 86400:
+        temp  = str(float( '%.2f' % (countdown / 60 / 60 /24)))
+        res = temp + '天'
+    elif countdown < 0:
+        res = '已关闭'
+    else:
+        temp  = str(float( '%.2f' % (countdown / 60 / 60)))
+        res = temp + '小时'
+    return res 
