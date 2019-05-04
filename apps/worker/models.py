@@ -12,6 +12,7 @@ class Work_Order(models.Model):
     remark = models.TextField(null=True,blank=True,verbose_name=u'备注信息')
     form_data = models.TextField(null=True, verbose_name=u'申请筛选数据')
     allocation_data = models.TextField(null=True, verbose_name=u'待分配数据')
+    kemans_data = models.TextField(null=True, verbose_name=u'最佳聚类的数据')
     target_data = models.TextField(null=True, verbose_name=u'最终分配结果数据')
     create_date  = models.CharField(null=True,max_length=100, verbose_name=u'创建时间')
     end_date  = models.CharField(null=True,max_length=100, verbose_name=u'结束时间')

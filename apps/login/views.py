@@ -93,6 +93,7 @@ class LoginInfo(APIView):
         token = tempdict.pop('token')
         tempdict.pop('usertype')
         tempdict.pop('roles')
+        tempdict.pop('schoolinfo')
         
         try:
             if passwordlist != False:
@@ -126,11 +127,11 @@ class LoginInfo(APIView):
             result_data = {'code': 200,'msg':'success', 'data': {} }
             return Response(result_data)
         
-        try:
-            UserInfo.objects.filter(u_id=token).update(**tempdict)
-        except Exception:
-            result_data = {'code': 200,'msg':'success', 'data': {} }
-            return Response(result_data)
+        # try:
+        UserInfo.objects.filter(u_id=token).update(**tempdict)
+        # except Exception:
+        #     result_data = {'code': 200,'msg':'success', 'data': {} }
+        #     return Response(result_data)
         
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)

@@ -37,7 +37,7 @@ class UserInfo(models.Model):
     interests = models.TextField(null=True, verbose_name=u'兴趣爱好')
     livinghabits = models.TextField(null=True, verbose_name=u'生活习惯')
     dorm_id = models.IntegerField(null=True, verbose_name=u'宿舍ID')
-    status = models.IntegerField(null=True, verbose_name=u'宿舍分配状态（（0待分配,1分配中,2 已分配））')
+    status = models.IntegerField(default=0,null=True, verbose_name=u'宿舍分配状态（（0待分配,1分配中,2 已分配））')
     createtime = models.CharField(max_length=100, verbose_name=u'创建时间')
 
 

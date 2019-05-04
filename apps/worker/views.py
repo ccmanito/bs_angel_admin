@@ -9,6 +9,17 @@ from login.common import get_parameter_dic
 import time,json,requests,hashlib
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 
+class Test(APIView):
+    '''
+    测试
+    '''
+    def get(self, request, format=None, *args, **kwargs):
+        keyword = 'xiyou'
+        allocation_data = get_allocation_data(keyword)
+        
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)
+
 class WorkerInfo(APIView):
     '''
     工单接口
@@ -20,16 +31,21 @@ class WorkerInfo(APIView):
         params = get_parameter_dic(request)
         token = int(params.get('token'))
         filters = params.get('filters', '')
-        if filters == '':
-            temp = {}
-        else:
+               
+        tempdict = {}
+        if filters != '' and filters != '{}':
             temp = json.loads(filters)
-    
+            
+            if temp['school'] != '':
+                tempdict['school'] = temp['school']
+            if temp['step_id'] != '':
+                tempdict['step_id'] = temp['step_id']
+        
         if token == 3:
             #管理员
-            res = Work_Order.objects.filter(**temp).values().order_by('-create_date')
+            res = Work_Order.objects.filter(**tempdict).values().order_by('-create_date')
         else:
-            res = Work_Order.objects.filter(proposer=token, **temp).values().order_by('-create_date')
+            res = Work_Order.objects.filter(proposer=token, **tempdict).values().order_by('-create_date')
         
         # datalist数据处理
         resultList = []
@@ -77,19 +93,21 @@ class WorkerInfo(APIView):
         # 工单录入   
         # 步骤一  
         try:
-            Work_Order.objects.get_or_create(school= school, keyword=keyword, status_id=status_id, 
+            req = Work_Order.objects.get_or_create(school= school, keyword=keyword, status_id=status_id, 
                         step_id = step_id , proposer=proposer, proposer_name=proposer_name, create_date=create_date,remark=remark,end_date=end_date,
                         description=description, form_data=form_data)
         except Exception:
             result_data = {'code': 200,'msg':'success', 'data': {} }
             return Response(result_data)
 
+        print(req[1])
         # 步骤二
         # 定时执行宿舍分配
-        timestr = format_time(params['endtime'])
-        temp_args = []
-        temp_args.append(keyword)
-        regularly(timestr, temp_args)
+        if req[1]:
+            timestr = format_time(params['endtime'])
+            temp_args = []
+            temp_args.append(keyword)
+            regularly(timestr, temp_args)
         
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
