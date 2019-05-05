@@ -150,6 +150,7 @@ def get_allocation_data(msg):
             'target_man': target_res_man,
             'target_woman': target_res_woman
         }
+        data = json.dumps(data)
     except Exception:
         data = {}
     return data

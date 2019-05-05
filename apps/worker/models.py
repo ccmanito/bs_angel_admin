@@ -5,7 +5,7 @@ class Work_Order(models.Model):
     keyword = models.CharField(max_length=64,unique=True, verbose_name=u'关键字')
     status_id = models.IntegerField(default=1,verbose_name=u'工单状态')
     school = models.CharField(null=True,max_length=64,verbose_name=u'分配单位')
-    step_id = models.IntegerField(blank=True, null=True,default=1,verbose_name=u'当前步骤')
+    step_id = models.IntegerField(blank=True, null=True,default=0,verbose_name=u'当前步骤')
     proposer = models.CharField(null=True,max_length=64,verbose_name=u'申请人ID')
     proposer_name = models.CharField(null=True,max_length=64,verbose_name=u'申请人姓名')
     description = models.CharField(null=True,max_length=128,verbose_name=u'简单描述')
