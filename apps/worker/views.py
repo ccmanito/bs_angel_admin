@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from .models import *
 from .controller import *
-from .kmeans import run_kemans
+from .kmeans import *
 from .tasks import regularly
 from login.common import get_parameter_dic
 import time,json,requests,hashlib
@@ -188,27 +188,89 @@ class KmeansModel(APIView):
     '''
     def get(self, request,format=None, *args, **kwargs):
         '''
-        get方法
+        获取最佳聚类中心拐点图
         '''
-        params = get_parameter_dic(request)
-        
-        result_data = {'code': 200,'msg':'success', 'data': {} }
+        params = get_parameter_dic(request)  
+        w_id = params.get('id', 0)
+        res = Work_Order.objects.filter(id=w_id).values()
+        keyword = res[0]['keyword']
+        if res[0]['allocation_data'] != None:
+            allocation_data = res[0]['allocation_data']
+            try:
+                get_elbow_picture(allocation_data,keyword)
+            except Exception as eer:
+                print("算法执行出错",eer)
+
+        data = {
+            'man': './static/images/man/' + keyword + '.png',
+            'woman': './static/images/woman/' + keyword + '.png'
+        }
+        result_data = {'code': 200,'msg':'success', 'data': data }
         return Response(result_data)
     def post(self,request, format=None, *args, **kwargs):
         '''
-        post方法
+        执行 kemans 获得分配结果
         '''
-        params = get_parameter_dic(request)
-        print(params)
-        {'min_cluster_center': 2, 'max_cluster_center': 10, 'id': '51'}
+        params = get_parameter_dic(request)  
         w_id = params.get('id')
-        min_cluster_center = params.get('min_cluster_center')
-        max_cluster_center = params.get('max_cluster_center')
+        woman_k = params.get('woman_k')
+        man_k = params.get('man_k')
         res = Work_Order.objects.filter(id=w_id).values()
         keyword = res[0]['keyword']
         if res[0]['allocation_data'] != None:
             allocation_data = res[0]['allocation_data']
             #  kemans 调用
-            run_kemans(min_cluster_center,max_cluster_center,allocation_data,keyword)
+            try:
+                run_kemans(allocation_data,keyword, woman_k, man_k)
+            except Exception as eer:
+                print("算法执行出错",eer)
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
+
+class AuthWorker(APIView):
+    '''
+    权限管理
+    '''
+    def get(self, request, format=None, *args, **kwargs):
+        '''
+        权限申请列表获取,权限状态获取
+        '''
+        params = get_parameter_dic(request)  
+        
+        roles = int(params.get('roles'))
+        proposer = int(params.get('proposer'))
+        if roles == 3:
+            # 管理员获取权限列表
+            res = Auth_Work.objects.filter().values()
+        else:
+            try:
+                res = Auth_Work.objects.filter(proposer=proposer).values()
+            
+                data = {
+                    'step': res[0]['step'],
+                    'status_id': res[0]['status_id']
+                }
+            except Exception:
+                data = {}
+
+        result_data = {'code': 200,'msg':'success', 'data': data }
+        return Response(result_data)
+
+    def post(self, request, format=None, *args, **kwargs):
+        '''
+        权限申请提交
+        '''
+        params = get_parameter_dic(request)
+        params['create_date'] = int(time.time())
+        try:
+            res = Auth_Work.objects.get_or_create(**params)
+        except Exception:
+            result_data = {'code': 200,'msg':'success', 'data': {} }
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)
+    
+    def put(self, request, format=None, *args, **kwargs):
+        '''
+        权限流程更新
+        '''
+        pass
