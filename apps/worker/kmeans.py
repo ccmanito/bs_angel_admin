@@ -1,6 +1,8 @@
 #coding:utf-8
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+# import matplotlib matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 from sklearn import metrics
 from sklearn.cluster import KMeans, MiniBatchKMeans #导入K均值聚类算法
 from sklearn.decomposition import PCA #进行降维处理
@@ -99,7 +101,7 @@ def kmeans(df,k,drawplt = True, max_iter=300,return_n_iter=True):
     num = kmeans.n_iter_
     # if drawplt:
     #     draw(data_set,centers_d)
-    return inertia,labels
+    return inertia,labels,num
 
 def SSE(df, max_cluster_center, key, keyword):
     '''
@@ -120,7 +122,8 @@ def SSE(df, max_cluster_center, key, keyword):
         plt.title('female k')
         plt.savefig( 'E:\workdir\\bs\\bs_angel_fe\static\images\woman' + '\\'+ keyword + '.png')
         picture_path['woman_picture_path'] = 'E:\workdir\\bs\\bs_angel_fe\static\images\woman' + '\\'+ keyword + '.png'
-        plt.close()
+        # plt.close()
+        plt.clf()
     else:
         MANSSE = []  # 存放每次结果的误差平方和
         for k2 in range(2, max_cluster_center):
@@ -133,7 +136,8 @@ def SSE(df, max_cluster_center, key, keyword):
         plt.title('male k')
         plt.savefig('E:\workdir\\bs\\bs_angel_fe\static\images\man' + '\\'+ keyword + '.png')
         picture_path['man_picture_path'] = 'E:\workdir\\bs\\bs_angel_fe\static\images\woman' + '\\'+ keyword + '.png'
-        plt.close()
+        # plt.close()
+        plt.clf()
     return picture_path
 
 def get_data_list(allocation_data,keyword):
@@ -184,4 +188,54 @@ def run_kemans(allocation_data,keyword, woman_k, man_k):
     '''
     通过最佳得K执行分配
     '''
-    pass
+    
+    # 拿到处理好的待分配数据 
+    res = get_data_list(allocation_data, keyword)
+    man_df = res[0]
+    woman_df = res[1]
+    
+    # kmeans() retuen  inertia,labels,num
+    man_res = kmeans(man_df,man_k)
+    woman_res = kmeans(woman_df,woman_k)
+    
+    # 拿到原始数据
+    allocation_data = json.loads(allocation_data)
+    manlist = allocation_data["target_man"]
+    womanlist = allocation_data["target_woman"]
+    
+    
+    # enumerate(man_res[1]) return  [(0, 0), (1, 0), (2, 0)]
+    
+    tag_man_dict = {
+        'iterations': man_res[2],
+        'inertia': str(man_res[0])[0: 8],
+        'tag_man_list': []
+    }
+    tag_woman_dict = {
+        'iterations': woman_res[2],
+        'inertia': str(woman_res[0])[0: 8],
+        'tag_woman_list': []
+    }
+
+    for i in range(man_k): 
+        man_list = []
+        index_man_list = [index for index,value in enumerate(man_res[1]) if value == i ]
+        for k in index_man_list:
+            man_value = [value1 for index1,value1 in enumerate(manlist) if index1 == k ]
+            man_list.append(man_value[0])
+        tag_man_dict['tag_man_list'].append(man_list)
+    
+    
+    for j in range(woman_k): 
+        woman_list = []
+        index_woman_list = [index2 for index2,value2 in enumerate(woman_res[1]) if value2 == j ]
+        for m in index_woman_list:
+            woman_value = [value3 for index3,value3 in enumerate(womanlist) if index3 == m ]
+            woman_list.append(woman_value[0])
+        tag_woman_dict['tag_woman_list'].append(woman_list)
+    
+    result = []
+    result.append(tag_man_dict)
+    result.append(tag_woman_dict)
+    
+    return result

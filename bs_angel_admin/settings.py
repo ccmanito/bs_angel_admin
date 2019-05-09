@@ -68,13 +68,14 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
     '*'
 )
-CORS_ALLOW_METHODS = (
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-    'VIEW',
+CORS_ALLOW_METHODS = ( '*'
+    # 'GET',
+    # 'OPTIONS',
+    # 'DELETE'
+    # 'PATCH',
+    # 'POST',
+    # 'PUT',
+    # 'VIEW',
 )
 CORS_ALLOW_HEADERS = (
     'XMLHttpRequest',

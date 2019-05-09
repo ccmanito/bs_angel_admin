@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from .models import *
 from .controller import *
 from .kmeans import *
+from login.models import UserInfo
 from .tasks import regularly
 from login.common import get_parameter_dic
 import time,json,requests,hashlib
@@ -38,7 +39,7 @@ class WorkerDetail(APIView):
             res = Work_Order.objects.filter(id=w_id).values()
             allocation_data = res[0]['allocation_data']
             if allocation_data != None:
-                allocation_data = json.loads(res[0]['allocation_data'])
+                allocation_data = json.loads(allocation_data)
                 man_num = len(allocation_data['target_man'])
                 woman_num = len(allocation_data['target_woman'])
                 total_num  = man_num + woman_num
@@ -56,19 +57,27 @@ class WorkerDetail(APIView):
         elif step_id == 1:
             # 第二部阶段 
             res = Work_Order.objects.filter(id=w_id).values()
-            allocation_data = json.loads(res[0]['allocation_data'])
-            man_num = len(allocation_data['target_man'])
-            woman_num = len(allocation_data['target_woman'])
-            total_num  = man_num + woman_num
-            data = {
-                'total_num': total_num,
-                'man_num': man_num,
-                'woman_num': woman_num,
-                'countdown': countdown(res[0]['end_date'])
-            }
-
+            allocation_data = res[0]['allocation_data']
+            if allocation_data != None:
+                allocation_data = json.loads(allocation_data)
+                man_num = len(allocation_data['target_man'])
+                woman_num = len(allocation_data['target_woman'])
+                total_num  = man_num + woman_num
+                data = {
+                    'total_num': total_num,
+                    'man_num': man_num,
+                    'woman_num': woman_num,
+                    'countdown': countdown(res[0]['end_date'])
+                }
+            else:
+                data = {
+                    'total_num': 0,
+                    'man_num': 0,
+                    'woman_num': 0,
+                    'countdown': countdown(res[0]['end_date'])
+                }
         else:
-            pass
+            data = {}
         result_data = {'code': 200,'msg':'success', 'data': data }
         return Response(result_data)
 
@@ -77,10 +86,16 @@ class WorkerDetail(APIView):
         修改setp_id
         '''
         params = get_parameter_dic(request)
-        w_id = int(params.get('id', 0))
         step_id = int(params.get('step_id'))
+        arg = {
+            'step_id': step_id
+        }
+        if step_id == 2:
+            arg['kemans_data'] = params.get('kemans_data')
+        w_id = int(params.get('id', 0))
+        
         try:
-            Work_Order.objects.filter(id= w_id).update(step_id = step_id)
+            Work_Order.objects.filter(id= w_id).update(**arg)
         except Exception:
             result_data = {'code': 200,'msg':'success', 'data': {} }
         result_data = {'code': 200,'msg':'success', 'data': {} }
@@ -213,18 +228,22 @@ class KmeansModel(APIView):
         '''
         params = get_parameter_dic(request)  
         w_id = params.get('id')
-        woman_k = params.get('woman_k')
-        man_k = params.get('man_k')
+        woman_k = int(params.get('woman_k'))
+        man_k = int(params.get('man_k'))
         res = Work_Order.objects.filter(id=w_id).values()
         keyword = res[0]['keyword']
         if res[0]['allocation_data'] != None:
             allocation_data = res[0]['allocation_data']
             #  kemans 调用
             try:
-                run_kemans(allocation_data,keyword, woman_k, man_k)
+                results = run_kemans(allocation_data,keyword, woman_k, man_k)
             except Exception as eer:
+                results = {}
                 print("算法执行出错",eer)
-        result_data = {'code': 200,'msg':'success', 'data': {} }
+        
+        else:
+            results = {}
+        result_data = {'code': 200,'msg':'success', 'data': results }
         return Response(result_data)
 
 class AuthWorker(APIView):
@@ -245,7 +264,7 @@ class AuthWorker(APIView):
         else:
             try:
                 res = Auth_Work.objects.filter(proposer=proposer).values()
-            
+                # 普通用户获取步骤，及状态
                 data = {
                     'step': res[0]['step'],
                     'status_id': res[0]['status_id']
