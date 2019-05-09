@@ -11,17 +11,6 @@ from login.common import get_parameter_dic
 import time,json,requests,hashlib
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 
-class Test(APIView):
-    '''
-    测试
-    '''
-    def get(self, request, format=None, *args, **kwargs):
-        keyword = 'xiyou'
-        allocation_data = get_allocation_data(keyword)
-        
-        result_data = {'code': 200,'msg':'success', 'data': {} }
-        return Response(result_data)
-
 
 class WorkerDetail(APIView):
     '''
@@ -246,6 +235,7 @@ class KmeansModel(APIView):
         result_data = {'code': 200,'msg':'success', 'data': results }
         return Response(result_data)
 
+
 class AuthWorker(APIView):
     '''
     权限管理
@@ -254,16 +244,38 @@ class AuthWorker(APIView):
         '''
         权限申请列表获取,权限状态获取
         '''
-        params = get_parameter_dic(request)  
-        
+        params = get_parameter_dic(request)
         roles = int(params.get('roles'))
-        proposer = int(params.get('proposer'))
+        
         if roles == 3:
             # 管理员获取权限列表
-            res = Auth_Work.objects.filter().values()
+            filters = params.get('filters', '')
+
+            tempdict = {}
+            if filters != '' and filters != '{}':
+                temp = json.loads(filters)
+                if temp['status_id'] != '':
+                    tempdict['status_id'] = temp['status_id']
+            
+            res = Auth_Work.objects.filter(**tempdict).values()
+            req = []
+            for i in res:
+                tempdict = {
+                    'id': i['id'],
+                    'school': i['school'],
+                    'remark': i['remark'],
+                    'u_id': i['proposer'],
+                    'proposer_name': i['proposer_name'],
+                    'create_date': format_time(i['create_date']),
+                    'professional': i['professional'],
+                    'status_id': i['status_id']
+                }
+                req.append(tempdict)
+            data = req
         else:
             try:
-                res = Auth_Work.objects.filter(proposer=proposer).values()
+                proposer = int(params.get('proposer'))
+                res = Auth_Work.objects.filter(proposer=proposer).values().order_by('-create_date')
                 # 普通用户获取步骤，及状态
                 data = {
                     'step': res[0]['step'],
@@ -292,4 +304,26 @@ class AuthWorker(APIView):
         '''
         权限流程更新
         '''
-        pass
+        params = get_parameter_dic(request)
+        print(params)
+        a_id = params.get('id')
+        key = params.get('key')
+        u_id = params.get('u_id')
+        if key == 'pass':
+            # 通过申请
+            tempdict = {
+                'step': 3,
+                'status_id': 1
+            }
+            UserInfo.objects.filter(u_id=u_id).update(roles=2)
+            Auth_Work.objects.filter(id=a_id).update(**tempdict)
+        else:
+            # 驳回申请
+            tempdict = {
+                'step': 0,
+                'status_id': 2
+            }
+            UserInfo.objects.filter(u_id=u_id).update(roles=1)
+            Auth_Work.objects.filter(id=a_id).update(**tempdict)
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)

@@ -27,11 +27,11 @@ class Work_Order(models.Model):
 class Auth_Work(models.Model):
     status_id = models.IntegerField(default=1,verbose_name=u'工单状态')
     school = models.CharField(null=True,max_length=64,verbose_name=u'所在单位')
-    step = models.IntegerField(blank=True, null=True,default=0,verbose_name=u'当前步骤')
-    proposer = models.CharField(null=True,unique=True,max_length=64,verbose_name=u'申请人ID')
+    step = models.IntegerField(null=True,default=0,verbose_name=u'当前步骤')
+    proposer = models.CharField(null=True,max_length=64,verbose_name=u'申请人ID')
     proposer_name = models.CharField(null=True,max_length=64,verbose_name=u'申请人姓名')
     professional = models.CharField(null=True,max_length=64,verbose_name=u'申请人职业')
-    remark = models.TextField(null=True,blank=True,verbose_name=u'备注信息')
+    remark = models.TextField(null=True,verbose_name=u'备注信息')
     create_date  = models.CharField(null=True,max_length=100, verbose_name=u'创建时间')
 
     def __str__(self):

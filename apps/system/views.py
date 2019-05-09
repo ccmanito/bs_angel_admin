@@ -302,9 +302,91 @@ class DormDetail(APIView):
         return Response(result_data)
 
 
-class Test(APIView):
+class UserList(APIView):
     '''
+    用户信息管理
     '''
-    pass
+    def get(self, request, format=None, *args, **kwargs):
+        '''
+        所有用户信息查看
+        '''
+        params = get_parameter_dic(request)
+        
+        filters = params.get('filters', '')
+        page = params.get('page',None)
+        page_size = params.get('page_size',None)
 
-    
+        # 筛选功能
+        tempdict = {}
+        if filters != '' and filters != '{}':
+            temp = json.loads(filters)
+            if temp['name'] != '':
+                tempdict['name__contains'] = temp['name']
+
+            if temp['status'] != '':
+                tempdict['status'] = temp['status']
+
+        if not page or not page_size:
+            page = 1
+            page_size = 10
+
+        try:
+            total_count = UserInfo.objects.filter(**tempdict).count()
+            res = UserInfo.objects.filter(**tempdict).values().order_by('u_id')
+
+        except Exception as eer:
+            print('查询用户信息失败' + eer)
+        
+        if total_count == 0:
+                result_data = {'code': 200,'msg':'查询结果为空', 'data': {} }
+        
+        paginator = Paginator(res,page_size)
+        try:
+            page_info = paginator.page(page)
+        except PageNotAnInteger:
+            page_info = paginator.page(1)
+        except EmptyPage:
+            page_info = paginator.page(paginator.num_pages)
+
+        # datalist数据处理
+        resultList = []
+        for i in page_info:
+            
+            tempDict = {
+                'u_id': i['u_id'],
+                'name': i['name'],
+                'sex': i['sex'],
+                'roles': i['roles'],
+                'email': i['email'],
+                'mobile': i['mobile'],
+                'professional': i['professional'],
+                'dorm_id': i['dorm_id'],
+                'status': i['status'],
+                'school': i['school'],
+                'college': i['college'],
+                'major': i['major'],
+                'grade': i['grade'],
+                'classname': i['classname'],
+            }
+            
+            resultList.append(tempDict)
+        data = {
+            'totalNum': total_count,
+            'data': resultList
+        }
+        result_data = {'code': 200,'msg':'success', 'data': data }
+        return Response(result_data)
+
+    def delete(self, request,format=None, *args, **kwargs):
+        '''
+        删除用户信息
+        '''
+        params = get_parameter_dic(request)
+        u_id = params.get('u_id')
+        try:
+            UserInfo.objects.filter(u_id=u_id).delete()
+        except Exception as eer:
+            print('该用户信息删除失败' + eer)
+        result_data = {'code': 200,'msg':'success', 'data': {} }
+        return Response(result_data)    
+        
