@@ -2,6 +2,7 @@
 import time,json
 from .models import Work_Order
 from login.models import UserInfo
+from system.models import DormInfo
 from django.db.models import Q
 
 def format_time(msg):
@@ -155,7 +156,24 @@ def get_allocation_data(msg):
         data = {}
     return data
 
-def test():
+def syncDormInfo(msg):
     '''
+    宿舍分配成功后同步到各个表
     '''
-    pass
+    resultdata = json.loads(msg)
+    
+    woman_result = resultdata['woman_result']
+    man_result = resultdata['man_result']
+    result = woman_result + man_result
+    
+    for i in result:
+        d_id = i['id']
+        userlist = i['userlist']
+        residents = json.dumps(userlist)
+        
+        DormInfo.objects.filter(id= d_id).update(residents=residents, status=1, in_date=int(time.time()))
+        u_idlist = []
+        for j in userlist:
+            UserInfo.objects.filter(u_id= j['u_id']).update(dorm_id=d_id, status=1)
+    
+    return 0

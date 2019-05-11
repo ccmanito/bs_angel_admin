@@ -10,7 +10,8 @@ class DormInfo(models.Model):
     dorm_id = models.CharField(max_length=100, null=True, verbose_name=u'宿舍号')
     status = models.IntegerField(default=0, verbose_name=u'宿舍状态',)
     dorm_size = models.IntegerField(default=6, verbose_name=u'宿舍大小')
-    residents = models.CharField(max_length=200, null=True, default= '无', verbose_name=u'住户信息' )
+    dorm_type = models.CharField(max_length=200, null=True, default= '男', verbose_name=u'宿舍类型')
+    residents = models.CharField(max_length=2000, null=True, default= '无', verbose_name=u'住户信息' )
     remark = models.CharField(max_length=500, null=True, verbose_name=u'备注信息')
     in_date = models.CharField(max_length=200, null=True, verbose_name=u'入住时间')
 

@@ -222,14 +222,18 @@ class DormDetail(APIView):
         # datalist数据处理
         resultList = []
         for i in page_info:
-            
+            if i['residents'] == '无':
+                residents = [{'name': '无'}]
+            else:
+                residents = json.loads(i['residents'])
             tempDict = {
                 'id': i['id'],
                 'status': i['status'],
-                'residents': i['residents'],
+                'residents': residents,
                 'dorm_size': i['dorm_size'],
                 'floor': i['floor'],
                 'address': i['address'],
+                'dorm_type': i['dorm_type'] + '生宿舍',
                 'in_date': format_time(i['in_date']),
                 'dorm_id':  i['dorm_id'],
             }
@@ -250,6 +254,8 @@ class DormDetail(APIView):
         address = params.get('address')
         floor = params.get('floor')
         dorm_id = params.get('dorm_id')
+        dorm_size = params.get('dorm_size')
+        dorm_type = params.get('dorm_type')
         userinfo = params.get('userinfo')
         remark = params.get('remark')
         u_id = userinfo.get('token')
@@ -261,6 +267,8 @@ class DormDetail(APIView):
             'dorm_id': dorm_id,
             'remark': remark,
             'u_id': u_id,
+            'dorm_size': dorm_size,
+            'dorm_type': dorm_type,
             'proposer_name': proposer_name
         }
         try:
@@ -301,6 +309,29 @@ class DormDetail(APIView):
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
 
+class InfoDetail(APIView):
+    '''
+    用户获取宿舍信息
+    '''
+    def get(self, request,format=None, *args, **kwargs):
+        params = get_parameter_dic(request)
+        d_id = params.get('dorm_id')
+        res = DormInfo.objects.filter(id=d_id).values()
+        
+        if res[0]['residents'] == '无':
+            residents = [{'name': '无'}]
+        else:
+            residents = json.loads(res[0]['residents'])
+        
+        data = [{
+            'id': res[0]['id'],
+            'address': res[0]['address'],
+            'floor': res[0]['floor'],
+            'residents': residents,
+            'in_date': format_time(res[0]['in_date'])
+        }]
+        result_data = {'code': 200,'msg':'success', 'data': data }
+        return Response(result_data)
 
 class UserList(APIView):
     '''
