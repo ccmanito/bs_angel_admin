@@ -309,6 +309,7 @@ class DormDetail(APIView):
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)
 
+
 class InfoDetail(APIView):
     '''
     用户获取宿舍信息
@@ -317,21 +318,24 @@ class InfoDetail(APIView):
         params = get_parameter_dic(request)
         d_id = params.get('dorm_id')
         res = DormInfo.objects.filter(id=d_id).values()
+        if res == []:
+            if res[0]['residents'] == '无':
+                residents = [{'name': '无'}]
+            else:
+                residents = json.loads(res[0]['residents'])
         
-        if res[0]['residents'] == '无':
-            residents = [{'name': '无'}]
+            data = [{
+                'id': res[0]['id'],
+                'address': res[0]['address'],
+                'floor': res[0]['floor'],
+                'residents': residents,
+                'in_date': format_time(res[0]['in_date'])
+            }]
         else:
-            residents = json.loads(res[0]['residents'])
-        
-        data = [{
-            'id': res[0]['id'],
-            'address': res[0]['address'],
-            'floor': res[0]['floor'],
-            'residents': residents,
-            'in_date': format_time(res[0]['in_date'])
-        }]
+            data = []
         result_data = {'code': 200,'msg':'success', 'data': data }
         return Response(result_data)
+
 
 class UserList(APIView):
     '''
@@ -420,4 +424,35 @@ class UserList(APIView):
             print('该用户信息删除失败' + eer)
         result_data = {'code': 200,'msg':'success', 'data': {} }
         return Response(result_data)    
+    
+
+class Statistics(APIView):
+    '''
+    资源统计
+    '''
+    def get(self, request,format=None, *args, **kwargs):
+        params = get_parameter_dic(request)
+
+        totalUserCount = UserInfo.objects.filter().count()
+        totalDormCount = DormInfo.objects.filter().count()
+        totalVisitsCount = int(3020)
+        totalSchoolCount = SchoolInfo.objects.filter().count()
         
+        total_woman = UserInfo.objects.filter(sex='女').count()
+        total_man = UserInfo.objects.filter(sex='男').count()
+        
+        total_free_dorm = DormInfo.objects.filter(status=0).count()
+        total_used_dorm = DormInfo.objects.filter(status=1).count()
+        
+        data = {
+            'total_free_dorm': total_free_dorm,
+            'total_used_dorm': total_used_dorm,
+            'total_woman': total_woman,
+            'total_man': total_man,
+            'totalUserCount': totalUserCount,
+            'totalDormCount': totalDormCount,
+            'totalVisitsCount': totalVisitsCount,
+            'totalSchoolCount': totalSchoolCount
+        }
+        result_data = {'code': 200,'msg':'success', 'data': data }
+        return Response(result_data)

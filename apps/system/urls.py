@@ -9,4 +9,5 @@ urlpatterns = [
         path(u'dorm/info', views.DormDetail.as_view(), name='宿舍信息管理'),
         path(u'dorm/detail', views.InfoDetail.as_view(), name='宿舍信息获取'),
         path(u'user/list', views.UserList.as_view(), name='用户信息管理'),
+        path(u'statistics', views.Statistics.as_view(), name='资源统计'),
 ]

@@ -152,7 +152,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOCAL_URL = 'http://127.0.0.1:7080'
-AVATAR = "http://f.hiphotos.baidu.com/image/pic/item/8601a18b87d6277ffbd3a0d722381f30e824fc18.jpg"
+AVATAR = "http://ccmanito.cn/FmuuGcRmNDREKkod1_9grjLT4AiK"
 OAUTH_GITHUB_CONFIG = {
     'oauth_type_id' : 3,   #对应模型中记录的ID
     'oauth_type' : 'Github',
