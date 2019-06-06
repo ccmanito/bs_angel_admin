@@ -55,28 +55,13 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
-    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'apps.cmw_user.utils.middleware.UserAuthMiddle',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',  
 ]
-
 # 跨域增加忽略
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = (
-    '*'
-)
-CORS_ALLOW_METHODS = ( '*'
-    # 'GET',
-    # 'OPTIONS',
-    # 'DELETE'
-    # 'PATCH',
-    # 'POST',
-    # 'PUT',
-    # 'VIEW',
-)
+CORS_ORIGIN_WHITELIST = ('*')
+CORS_ALLOW_METHODS = ('*')
 CORS_ALLOW_HEADERS = (
     'XMLHttpRequest',
     'X_FILENAME',

@@ -48,6 +48,7 @@ class WorkerDetail(APIView):
             # 第二部阶段 
             res = Work_Order.objects.filter(id=w_id).values()
             allocation_data = res[0]['allocation_data']
+            print('wwwwwwwwwwwwwwwwwwwwwwwwwwww')
             if allocation_data != None:
                 allocation_data = json.loads(allocation_data)
                 man_num = len(allocation_data['target_man'])

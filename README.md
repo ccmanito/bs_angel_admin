@@ -1,8 +1,8 @@
 bs_angel-admin
 
 ============
-
-## Install dependency
+## Python版本定为3.5.4  兼容七牛云SDK
+## Install dependency on linux
 
     # yum install -y python-virtualenv
 
@@ -10,13 +10,21 @@ bs_angel-admin
 
     $ pip install virtualenv
 
-    $ virtualenv -p /usr/bin/python3.6  ./.venv
+    $ virtualenv -p /usr/bin/python3.5.4  ./.venv
 
     $ source ./.venv/bin/activate
 
-    $ ./.venv/bin/pip install -r pip_requirements.txt
+    $ ./.venv/bin/pip install -r requirements.txt
+## Install dependency on windows
+
+    安装Python3.5.4
+    安装 virtualenv： pip install virtualenv
+    virtualenv ./.venv
+    .\.venv\Scripts\activate
+    .\.venv\Scripts\pip install -r requirements.txt
 
 ### 启动项目
 
-    # source env/bin/activate
-    # python manage.py runserver 127.0.0.1:8080
+    # Linux下： source env/bin/activate
+    # windows下： .\.venv\Scripts\activate
+    # python manage.py runserver 0.0.0.0:7080

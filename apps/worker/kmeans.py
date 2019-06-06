@@ -109,6 +109,7 @@ def SSE(df, max_cluster_center, key, keyword):
     '''
     path = os.getcwd()
     picture_path = {}
+    # print('max_cluster_center'+ max_cluster_center)
     if key == 'woman':
         WOSSE = []  # 存放每次结果的误差平方和
         for k1 in range(2, max_cluster_center):
@@ -181,7 +182,6 @@ def get_elbow_picture(allocation_data,keyword):
     
     sse_woman_path = SSE(res[1], res[3], 'woman', keyword)
     sse_man_path = SSE(res[0], res[2], 'man', keyword)
-
     return 0
 
 def run_kemans(allocation_data,keyword, woman_k, man_k):

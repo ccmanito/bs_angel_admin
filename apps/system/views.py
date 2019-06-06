@@ -317,6 +317,7 @@ class InfoDetail(APIView):
     def get(self, request,format=None, *args, **kwargs):
         params = get_parameter_dic(request)
         d_id = params.get('dorm_id')
+        print(d_id)
         res = DormInfo.objects.filter(id=d_id).values()
         if res == []:
             if res[0]['residents'] == '无':
