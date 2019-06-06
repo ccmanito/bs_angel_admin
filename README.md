@@ -1,8 +1,10 @@
-bs_angel-admin
+# bs_angel-admin
 
 ============
-## Python版本定为3.5.4  兼容七牛云SDK
-## Install dependency on linux
+
+### Python版本定为3.5.4  兼容七牛云SDK
+
+### Install dependency on linux
 
 `yum install -y python-virtualenv`
 
@@ -16,7 +18,7 @@ bs_angel-admin
 
 `./.venv/bin/pip install -r requirements.txt`
 
-# Install dependency on windows
+### Install dependency on windows
 
 `安装Python3.5.4`
 
@@ -28,11 +30,11 @@ bs_angel-admin
 
 `.\.venv\Scripts\pip install -r requirements.txt`
 
-## 启动项目
+# 启动项目
 
-# Linux下
+### Linux下
  `source env/bin/activate`
-# windows下：
+### windows下：
 `.\.venv\Scripts\activate`
 
 `python manage.py runserver 0.0.0.0:7080`
