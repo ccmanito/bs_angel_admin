@@ -2,6 +2,8 @@
 
 ============
 
+## 环境搭建
+
 ### Python版本定为3.5.4  兼容七牛云SDK
 
 ### Install dependency on linux
@@ -30,7 +32,7 @@
 
 `.\.venv\Scripts\pip install -r requirements.txt`
 
-# 启动项目
+## 启动项目
 
 ### Linux下
  `source env/bin/activate`
